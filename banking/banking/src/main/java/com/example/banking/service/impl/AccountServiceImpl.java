@@ -32,19 +32,28 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final AuthenticationManager authManager;
-    public AccountServiceImpl(AccountRepository accountRepository, AuthenticationManager authManager) {
+    private final RefreshTokenService refreshTokenService;
+    private final JWTService jwtService;
+    @Autowired
+    public AccountServiceImpl(AccountRepository accountRepository,
+                              AuthenticationManager authManager,
+                              JWTService jwtService,
+                              RefreshTokenService refreshTokenService) {
         this.accountRepository = accountRepository;
         this.authManager = authManager;
+        this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
-    @Autowired
-    private RefreshTokenService refreshTokenService;
+    // Delegate constructor for AccountRepository
+    public AccountServiceImpl(AccountRepository accountRepository) {
+        this(accountRepository, null, null, null); // Delegate to the primary constructor
+    }
 
 
-    @Autowired
-    private JWTService jwtService;
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
+    private final  BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @Override
     public AccountDto createAccount(AccountDto accountDto) {

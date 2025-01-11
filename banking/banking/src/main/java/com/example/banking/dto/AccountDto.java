@@ -33,9 +33,6 @@ public class AccountDto {
     @NotEmpty(message = "Password cannot be empty")
     private String password;
 
-//    @NotEmpty
-//    @Email(message ="Email is not valid")
-//    private String emailId;
 
     private Address address;
 
