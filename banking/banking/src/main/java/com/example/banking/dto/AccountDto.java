@@ -23,7 +23,6 @@ public class AccountDto {
     private String accountHolderName;
 
 
-
     @NotNull(message = "Balance cannot be null")
     @Min(value = 100, message = "Balance must be greater than or equal to 100")
     private Double balance;

@@ -1,5 +1,7 @@
 package com.example.banking.service;
 
+import com.example.banking.dto.JwtResponse;
+import com.example.banking.dto.RefreshTokenRequest;
 import com.example.banking.entity.RefreshToken;
 import com.example.banking.repository.AccountRepository;
 import com.example.banking.repository.RefreshTokenRepository;
@@ -19,11 +21,28 @@ public class RefreshTokenService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private JWTService jwtService;
+
+    public JwtResponse generateNewAccessToken(RefreshTokenRequest refreshTokenRequest) {
+        return findByToken(refreshTokenRequest.getToken())
+                .map(this::verifyExpiration)
+                .map(RefreshToken::getAccount)
+                .map(account -> {
+                    String accessToken = jwtService.generateToken(account.getAccountHolderName());
+                    return JwtResponse.builder()
+                            .accessToken(accessToken)
+                            .token(refreshTokenRequest.getToken())
+                            .build();
+                })
+                .orElseThrow(() -> new RuntimeException("Refresh token could not be generated"));
+    }
+
     public RefreshToken createRefreshToken(String username) {
         RefreshToken refreshToken=RefreshToken.builder()
                 .account(accountRepository.findByAccountHolderName(username))
                 .token(UUID.randomUUID().toString())
-                .expiryDate(Instant.now().plusMillis(600000))
+                .expiryDate(Instant.now().plusMillis(6000000))
                 .build();
        return refreshTokenRepository.save(refreshToken);
     }

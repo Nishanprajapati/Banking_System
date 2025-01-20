@@ -48,6 +48,13 @@ public class AccountController {
         return accountService.verify(accountDto);
     }
 
+    //getAllAccounts
+    @GetMapping
+    public ResponseEntity<List<AccountDto>> getAllAccounts(){
+        List<AccountDto> accounts = accountService.getAllAccounts();
+        return ResponseEntity.ok(accounts);
+    }
+
     //get account rest api
     @GetMapping("/{id}")
     public ResponseEntity<AccountDto> getAccountById(@PathVariable long id ){
@@ -57,19 +64,18 @@ public class AccountController {
 
     //Deposit REST Api
     @PutMapping("/{id}/deposit")
-    public ResponseEntity<AccountDto> deposit(@PathVariable Long id,@RequestBody Map<String , Double> request){
-        Double amount = request.get("amount");
-        AccountDto accountDto = accountService.deposit(id,amount);
+    public ResponseEntity<AccountDto> deposit(@PathVariable Long id, @RequestBody Map<String, Double> request) {
+        AccountDto accountDto = accountService.deposit(id, request);
         return ResponseEntity.ok(accountDto);
     }
 
+
     //withdraw restApi
     @PutMapping("/{id}/withdraw")
-     public ResponseEntity<AccountDto> withDraw(@PathVariable Long id,@RequestBody Map<String , Double> request) {
-         Double amount = request.get("amount");
-         AccountDto accountDto = accountService.withDraw(id, amount);
-         return ResponseEntity.ok(accountDto);
-     }
+    public ResponseEntity<AccountDto> withDraw(@PathVariable Long id, @RequestBody Map<String, Double> request) {
+        AccountDto accountDto = accountService.withDraw(id, request);
+        return ResponseEntity.ok(accountDto);
+    }
 
     //delete account
     @DeleteMapping("/{id}")
@@ -78,25 +84,23 @@ public class AccountController {
         return ResponseEntity.ok("Account deleted");
     }
 
+
     // Secure Deposit REST API
     @PutMapping("/{id}/secure-deposit")
     public ResponseEntity<AccountDto> secureDeposit(@PathVariable Long id,
                                                     @RequestBody Map<String, Double> request,
                                                     Authentication authentication) {
-        Double amount = request.get("amount");
-        String username = authentication.getName();
-        AccountDto accountDto = accountService.secureDeposit(id, amount, username);
+        AccountDto accountDto = accountService.secureDeposit(id, request, authentication);
         return ResponseEntity.ok(accountDto);
     }
+
 
     // Secure Withdraw REST API
     @PutMapping("/{id}/secure-withdraw")
     public ResponseEntity<AccountDto> secureWithdraw(@PathVariable Long id,
                                                      @RequestBody Map<String, Double> request,
                                                      Authentication authentication) {
-        Double amount = request.get("amount");
-        String username = authentication.getName();
-        AccountDto accountDto = accountService.secureWithdraw(id, amount, username);
+        AccountDto accountDto = accountService.secureWithdraw(id, request, authentication);
         return ResponseEntity.ok(accountDto);
     }
 
@@ -123,52 +127,18 @@ public class AccountController {
 
     //RefreshToken
     @PostMapping("/refreshToken")
-    public JwtResponse refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest){
-       return refreshTokenService.findByToken(refreshTokenRequest.getToken())
-               .map(refreshTokenService::verifyExpiration)
-               .map(RefreshToken::getAccount)
-               .map(account -> {
-                   String accessToken = jwtService.generateToken(account.getAccountHolderName());
-                   return JwtResponse.builder()
-                           .accessToken(accessToken)
-                           .token(refreshTokenRequest.getToken())
-                           .build();
-               }).orElseThrow(()-> new RuntimeException("Refresh token could not be generated"));
-
-    }
-
-    //getAllAccounts
-    @GetMapping
-    public ResponseEntity<List<AccountDto>> getAllAccounts(){
-        List<AccountDto> accounts = accountService.getAllAccounts();
-        return ResponseEntity.ok(accounts);
+    public JwtResponse refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return refreshTokenService.generateNewAccessToken(refreshTokenRequest);
     }
 
     @PostMapping("/withoutCompression")
     public ResponseEntity<String> withoutCompression(@RequestBody String body) {
-
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(body);
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     @PostMapping("/compression")
     public ResponseEntity<byte[]> compression(@RequestBody String body) {
-        byte[] compressedResponse = accountService.compress(body.getBytes());
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Content-Encoding", "gzip");
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .headers(httpHeaders)
-                .body(compressedResponse);
+        return accountService.prepareCompressed(body);
     }
-
-
-
-
-
-
+    
 }
