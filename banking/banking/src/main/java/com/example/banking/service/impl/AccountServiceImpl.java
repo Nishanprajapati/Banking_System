@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
@@ -45,12 +49,10 @@ public class AccountServiceImpl implements AccountService {
         this.refreshTokenService = refreshTokenService;
     }
 
-    // Delegate constructor for AccountRepository
+    // Delegate constructor for AccountRepository for test
     public AccountServiceImpl(AccountRepository accountRepository) {
         this(accountRepository, null, null, null); // Delegate to the primary constructor
     }
-
-
 
 
     private final  BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
@@ -77,29 +79,42 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountDto deposit(Long id, double amount) {
+    public AccountDto deposit(Long id, Map<String, Double> request) {
+        // Extract the amount here
+        Double amount = request.get("amount");
+
         Account account = accountRepository
                 .findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
-        double total= account.getBalance() + amount;
+
+        double total = account.getBalance() + amount;
         account.setBalance(total);
-        Account saveAccount =accountRepository.save(account);
-        return AccountMapper.mapToAccountDto(saveAccount);
+
+        Account savedAccount = accountRepository.save(account);
+
+        return AccountMapper.mapToAccountDto(savedAccount);
     }
 
+
+
     @Override
-    public AccountDto withDraw(Long id, double amount) {
+    public AccountDto withDraw(Long id, Map<String, Double> request) {
+        // Extract the amount here
+        Double amount = request.get("amount");
+
         Account account = accountRepository
                 .findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
-        if(account.getBalance() < amount){
+        if (account.getBalance() < amount) {
             throw new AccountNotFoundException("Insufficient balance");
         }
 
-        double total= account.getBalance() - amount;
+        double total = account.getBalance() - amount;
         account.setBalance(total);
-        Account savedAccount =accountRepository.save(account);
+
+        Account savedAccount = accountRepository.save(account);
+
         return AccountMapper.mapToAccountDto(savedAccount);
     }
 
@@ -115,7 +130,10 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public AccountDto secureDeposit(Long id, double amount, String username) {
+    public AccountDto secureDeposit(Long id, Map<String, Double> request, Authentication authentication) {
+        Double amount = request.get("amount");
+        String username = authentication.getName();
+
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
@@ -125,11 +143,17 @@ public class AccountServiceImpl implements AccountService {
 
         account.setBalance(account.getBalance() + amount);
         Account savedAccount = accountRepository.save(account);
+
         return AccountMapper.mapToAccountDto(savedAccount);
     }
 
+
+
     @Override
-    public AccountDto secureWithdraw(Long id, double amount, String username) {
+    public AccountDto secureWithdraw(Long id, Map<String, Double> request, Authentication authentication) {
+        Double amount = request.get("amount");
+        String username = authentication.getName();
+
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
@@ -143,8 +167,11 @@ public class AccountServiceImpl implements AccountService {
 
         account.setBalance(account.getBalance() - amount);
         Account savedAccount = accountRepository.save(account);
+
         return AccountMapper.mapToAccountDto(savedAccount);
     }
+
+
 
     @Override
     public List<AccountDto> getAllAccounts() {
@@ -196,5 +223,18 @@ public class AccountServiceImpl implements AccountService {
         }
         return byteArrayOutputStream.toByteArray();
     }
+
+    public ResponseEntity<byte[]> prepareCompressed(String body) {
+        byte[] compressedResponse = compress(body.getBytes());
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-Encoding", "gzip");
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(httpHeaders)
+                .body(compressedResponse);
+    }
+
 
 }
