@@ -15,14 +15,16 @@ import java.util.UUID;
 @Service
 public class RefreshTokenService {
 
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AccountRepository accountRepository;
+    private final JWTService jwtService;
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, AccountRepository accountRepository, JWTService jwtService) {
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.accountRepository = accountRepository;
+        this.jwtService = jwtService;
+    }
 
-    @Autowired
-    private AccountRepository accountRepository;
 
-    @Autowired
-    private JWTService jwtService;
 
     public JwtResponse generateNewAccessToken(RefreshTokenRequest refreshTokenRequest) {
         return findByToken(refreshTokenRequest.getToken())

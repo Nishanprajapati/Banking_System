@@ -1,67 +1,29 @@
 package com.example.banking;
 
-import com.example.banking.dto.AccountDto;
-import com.example.banking.entity.Address;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import com.example.banking.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@Testcontainers
+@AutoConfigureMockMvc
 class BankingApplicationTests {
 
-	@LocalServerPort
-	private int port;
+	@Container
+	static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:latest");
 
-	private String baseUrl="http://localhost";
+	@Autowired
+	private MockMvc mvc;
 
-	private static RestTemplate restTemplate;
-
-	private H2Repository h2Repository;
-
-	@BeforeAll
-	public static void init(){
-		restTemplate = new RestTemplate();
-	}
-
-	@BeforeEach
-	public void setup(){
-		baseUrl=baseUrl.concat(":").concat(port+"").concat("/api/accounts");
-	}
-
-	@Test
-	void contextLoads() {
-	}
-
-	@Test
-	public void testAddAccount() {
-		Address address = new Address();
-		address.setCity("New York");
-		address.setAddressType("Home");
-
-		AccountDto accountDto = new AccountDto(
-				0L,
-				"Nishan",
-				1000.0,
-				LocalDateTime.now(),
-				"123",
-				address
-		);
-
-		ResponseEntity<AccountDto> response = restTemplate.postForEntity(baseUrl + "/register", accountDto, AccountDto.class);
-
-
-		assertNotNull(response);
-
-	}
-
+	@Autowired
+	private AccountRepository accountRepository;
 
 
 
