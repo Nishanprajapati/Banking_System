@@ -3,24 +3,19 @@ package com.example.banking.controller;
 import com.example.banking.dto.AccountDto;
 import com.example.banking.dto.JwtResponse;
 import com.example.banking.dto.RefreshTokenRequest;
-import com.example.banking.entity.RefreshToken;
 import com.example.banking.service.AccountService;
-import com.example.banking.service.JWTService;
 import com.example.banking.service.RefreshTokenService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPOutputStream;
+
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -28,14 +23,10 @@ public class AccountController {
 
     private final AccountService accountService;
     private final RefreshTokenService refreshTokenService;
-
     public AccountController(AccountService accountService, RefreshTokenService refreshTokenService) {
         this.accountService = accountService;
         this.refreshTokenService = refreshTokenService;
     }
-
-    @Autowired
-    private JWTService jwtService;
 
     //Add Account REST Api
     @PostMapping("/register")
@@ -140,5 +131,5 @@ public class AccountController {
     public ResponseEntity<byte[]> compression(@RequestBody String body) {
         return accountService.prepareCompressed(body);
     }
-    
+
 }

@@ -95,9 +95,9 @@ class AccountServiceImplTest {
         request.put("amount", 500.0);
         double depositAmount = 500.0;
 
-        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "encodedPassword", null);
-        Account updatedAccount = new Account(accountId, "Nishan", 1500.0, LocalDateTime.now(), "encodedPassword", null);
-        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 1500.0, LocalDateTime.now(), "encodedPassword", null);
+        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "Password", null);
+        Account updatedAccount = new Account(accountId, "Nishan", 1500.0, LocalDateTime.now(), "Password", null);
+        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 1500.0, LocalDateTime.now(), "Password", null);
 
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(accountRepository.save(any(Account.class))).thenReturn(updatedAccount);
@@ -123,9 +123,9 @@ class AccountServiceImplTest {
         request.put("amount", 500.0);
         double withdrawAmount = 500.0;
 
-        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "encodedPassword", null);
-        Account updatedAccount = new Account(accountId, "Nishan", 500.0, LocalDateTime.now(), "encodedPassword", null);
-        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 500.0, LocalDateTime.now(), "encodedPassword", null);
+        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "Password", null);
+        Account updatedAccount = new Account(accountId, "Nishan", 500.0, LocalDateTime.now(), "Password", null);
+        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 500.0, LocalDateTime.now(), "Password", null);
 
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(accountRepository.save(any(Account.class))).thenReturn(updatedAccount);
@@ -150,9 +150,9 @@ class AccountServiceImplTest {
         request.put("amount", 500.0);
         String username = "Nishan";
 
-        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "encodedPassword", null);
-        Account updatedAccount = new Account(accountId, "Nishan", 500.0, LocalDateTime.now(), "encodedPassword", null);
-        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 500.0, LocalDateTime.now(), "encodedPassword", null);
+        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "Password", null);
+        Account updatedAccount = new Account(accountId, "Nishan", 500.0, LocalDateTime.now(), "Password", null);
+        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 500.0, LocalDateTime.now(), "Password", null);
 
         org.springframework.security.core.Authentication authentication = mock(org.springframework.security.core.Authentication.class);
 
@@ -179,9 +179,9 @@ class AccountServiceImplTest {
         request.put("amount", 500.0);
         String username = "Nishan";
 
-        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "encodedPassword", null);
-        Account updatedAccount = new Account(accountId, "Nishan", 1500.0, LocalDateTime.now(), "encodedPassword", null);
-        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 1500.0, LocalDateTime.now(), "encodedPassword", null);
+        Account account = new Account(accountId, "Nishan", 1000.0, LocalDateTime.now(), "Password", null);
+        Account updatedAccount = new Account(accountId, "Nishan", 1500.0, LocalDateTime.now(), "Password", null);
+        AccountDto expectedDto = new AccountDto(accountId, "Nishan", 1500.0, LocalDateTime.now(), "Password", null);
 
         org.springframework.security.core.Authentication authentication = mock(org.springframework.security.core.Authentication.class);
 
@@ -204,18 +204,14 @@ class AccountServiceImplTest {
     //for exceptional handling gor getAccountById
     @Test
     void getAccountById_ThrowsAccountNotFoundException() {
-        // Mock the behavior of accountRepository.findById to return empty Optional indicating no account id=1
         when(accountRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // check the method getAccountById(1l) throws AccountNotFoundException
         AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
             accountServiceImpl.getAccountById(1L);
         });
 
-        // Verify that the exception message is correct
         assertEquals("Account does not exist", exception.getMessage());
 
-        // Verify that the repository method was called
         verify(accountRepository).findById(1L);
     }
 
