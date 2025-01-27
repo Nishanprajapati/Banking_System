@@ -18,7 +18,7 @@ public class AccountDto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-   @NotEmpty
+   @NotBlank
    @Size(min = 3, max = 50,message="Name must be of at least 3 character ")
     private String accountHolderName;
 
